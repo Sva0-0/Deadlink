@@ -1,0 +1,47 @@
+{
+  "name": "p1",
+  "version": "1.0.0",
+  "description": "Project 1",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sva0-0/Code-Collab-editor-server.git"
+  },
+  "keywords": [
+    "collaborative",
+    "code",
+    "editor",
+    "realtime",
+    "socket.io",
+    "react",
+    "nodejs",
+    "express",
+    "web",
+    "app",
+    "fullstack"
+  ],
+  "author": "Adhithiya sv",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Sva0-0/Code-Collab-editor-server/issues"
+  },
+  "homepage": "https://github.com/Sva0-0/Code-Collab-editor-server#readme",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.525.0",
+    "react-router-dom": "^7.6.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan Results – Deadlink</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --bg: #000;
+    --fg: #fff;
+    --muted: #bbb;
+    --divider: #222;
+    --accent: #fff;
+    --row-hover: #111;
+    --scrollbar: #222;
+    --font: 'Fira Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'Segoe UI', monospace;
+    --green: #1ecb6b;
+    --red: #f33;
+    --pie-ok: #1ecb6b;
+    --pie-broken: #f33;
+  }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font); margin: 0;
+    display: flex; flex-direction: column;
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.light-mode {
+    --bg: #fff; --fg: #000;
+    --muted: #444; --divider: #eee;
+    --accent: #000; --row-hover: #f5f5f5;
+    --scrollbar: #eee;
+  }
+  .container {
+    max-width: 1000px; margin: 0 auto; padding: 32px 16px 0 16px;
+    flex: 1 0 auto; display: flex; flex-direction: column;
+    animation: fadeIn 1s cubic-bezier(.77,0,.18,1);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(32px);}
+    to { opacity: 1; transform: none;}
+  }
+  header {
+    margin-bottom: 18px;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .header-titles {
+    flex: 1 1 auto;
+  }
+  .title {
+    font-size: 2.3rem; font-weight: 600; letter-spacing: 1px; margin: 0 0 6px 0; line-height: 1.1;
+  }
+  .subtitle {
+    font-size: 1.1rem; color: var(--muted); margin-bottom: 2px; word-break: break-all;
+  }
+  .datetime {
+    font-size: 0.98rem; color: var(--muted); margin-bottom: 18px;
+  }
+  .toggle-btn {
+    background: none; border: none; color: var(--muted); font-size: 1.7rem; cursor: pointer;
+    transition: color 0.2s; border-radius: 50%; padding: 6px; outline: none; margin-top: 2px; margin-left: 8px; align-self: flex-start;
+  }
+  .toggle-btn:hover, .toggle-btn:focus {
+    color: var(--fg); background: var(--divider);
+  }
+  .summary-row {
+    display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 30px; border-bottom: 1px solid var(--divider); padding-bottom: 18px; align-items: center;
+  }
+  .summary-item {
+    min-width: 120px; margin-bottom: 10px;
+  }
+  .summary-label {
+    font-size: 0.98rem; color: var(--muted); margin-bottom: 2px; letter-spacing: 0.5px;
+  }
+  .summary-value {
+    font-size: 1.5rem; font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
+  }
+  .summary-value .icon {
+    width: 1.2em; height: 1.2em; vertical-align: middle;
+  }
+  .pie-chart-container {
+    width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; margin-left: 18px; opacity: 0; animation: fadeInPie 1.1s cubic-bezier(.77,0,.18,1) 0.3s forwards;
+  }
+  @keyframes fadeInPie {
+    from { opacity: 0; transform: scale(0.8);}
+    to { opacity: 1; transform: scale(1);}
+  }
+  .pie-label {
+    font-size: 0.95rem; color: var(--muted); text-align: center; margin-top: 2px; letter-spacing: 0.2px;
+  }
+  .actions {
+    display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .btn {
+    background: none; color: var(--accent); border: 1.5px solid var(--divider);
+    border-radius: 999px; padding: 9px 22px; font-size: 1rem; font-family: var(--font);
+    cursor: pointer; transition: background 0.2s, color 0.2s, border 0.2s; outline: none;
+    display: flex; align-items: center; gap: 7px; font-weight: 500; user-select: none;
+  }
+  .btn:hover, .btn:focus {
+    background: var(--row-hover); color: var(--fg); border-color: var(--fg);
+  }
+  .filter-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 10px; margin-top: 8px;
+  }
+  .filter-toggle {
+    display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--divider); background: none;
+  }
+  .filter-btn {
+    background: none; border: none; color: var(--muted); font-family: var(--font);
+    font-size: 1rem; padding: 7px 18px; cursor: pointer; transition: background 0.18s, color 0.18s; outline: none; font-weight: 500;
+  }
+  .filter-btn.active, .filter-btn:focus {
+    background: var(--row-hover); color: var(--fg);
+  }
+  .search-input {
+    background: var(--row-hover); color: var(--fg); border: 1px solid var(--divider);
+    border-radius: 999px; padding: 8px 16px; font-size: 1rem; font-family: var(--font); outline: none;
+    min-width: 180px; transition: border 0.2s, background 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--fg); background: var(--divider);
+  }
+  .results-table-wrapper {
+    overflow-x: auto; flex: 1 1 auto; margin-bottom: 32px; border-radius: 8px;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.04); background: transparent; opacity: 0; animation: fadeInTable 1.1s cubic-bezier(.77,0,.18,1) 0.2s forwards;
+  }
+  @keyframes fadeInTable {
+    from { opacity: 0; transform: translateY(32px);}
+    to { opacity: 1; transform: none;}
+  }
+  table {
+    width: 100%; border-collapse: collapse; min-width: 700px; font-size: 1rem; background: transparent;
+  }
+  thead {
+    background: transparent; border-bottom: 2px solid var(--divider);
+  }
+  th, td {
+    padding: 13px 10px; text-align: left; border-bottom: 1px solid var(--divider); vertical-align: middle;
+  }
+  th {
+    font-weight: 600; color: var(--muted); letter-spacing: 0.5px; font-size: 0.98rem; background: transparent; user-select: none;
+  }
+  tr {
+    transition: background 0.18s;
+  }
+  tbody tr:hover {
+    background: var(--row-hover);
+  }
+  td .icon {
+    vertical-align: middle; width: 1.2em; height: 1.2em;
+  }
+  .status-ok {
+    color: var(--green); font-weight: 600;
+  }
+  .status-broken {
+    color: var(--red); font-weight: 600;
+  }
+  .status-fixed {
+    color: var(--green); font-weight: 600; background: rgba(30,203,107,0.08); border-radius: 4px; padding: 2px 6px;
+  }
+  .status-newbroken {
+    color: var(--red); font-weight: 600; background: rgba(243,51,51,0.08); border-radius: 4px; padding: 2px 6px;
+  }
+  .source-file {
+    font-size: 0.97em; color: var(--muted); word-break: break-all;
+  }
+  .action-btn {
+    background: none; border: none; color: var(--accent); cursor: pointer; font-size: 1.1em; padding: 4px 8px;
+    border-radius: 6px; transition: background 0.2s, color 0.2s; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .action-btn:hover {
+    background: var(--divider); color: var(--fg);
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    height: 10px; width: 10px; background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar); border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--divider);
+  }
+  /* Responsive */
+  @media (max-width: 900px) {
+    .container { padding: 18px 2vw 0 2vw; }
+    .summary-row { gap: 18px; }
+    table { min-width: 500px; font-size: 0.97rem;}
+    th, td { padding: 10px 6px; }
+  }
+  @media (max-width: 600px) {
+    .title { font-size: 1.3rem; }
+    .summary-row { flex-direction: column; gap: 0; }
+    .results-table-wrapper { border-radius: 0; }
+    .pie-chart-container { margin-left: 0; margin-top: 18px;}
+    header { flex-direction: column; gap: 0;}
+    /* Increased touch target size for mobile */
+    .btn, .action-btn, .search-input { min-height: 44px; font-size: 1.1rem; }
+    .btn, .action-btn { padding: 12px 18px; }
+    .search-input { padding: 12px 16px; }
+  }
+  /* Tooltip */
+  .tooltip {
+    position: relative; cursor: pointer;
+  }
+  .tooltip .tooltiptext {
+    visibility: hidden; width: max-content; max-width: 220px; background: var(--divider); color: var(--fg);
+    text-align: left; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 10; bottom: 120%; left: 50%; transform: translateX(-50%);
+    opacity: 0; font-size: 0.97em; transition: opacity 0.2s; pointer-events: none; white-space: pre-line;
+  }
+  .tooltip:hover .tooltiptext, .tooltip:focus .tooltiptext {
+    visibility: visible; opacity: 1;
+  }
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.5); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s;
+  }
+  .modal {
+    background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 32px 24px 24px 24px;
+    min-width: 320px; max-width: 95vw; max-height: 90vh; overflow-y: auto; position: relative; animation: fadeIn 0.3s;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--fg);}
+  .modal-title {
+    font-size: 1.2rem; font-weight: 600; margin-bottom: 12px;
+  }
+  .modal-content {
+    font-size: 1rem; margin-bottom: 18px; white-space: pre-line;
+  }
+  .modal-actions {
+    display: flex; gap: 12px; justify-content: flex-end;
+  }
+  /* Footer always at bottom */
+  footer {
+    text-align: center; color: var(--muted); font-size: 1rem; padding: 32px 0 18px 0; letter-spacing: 0.2px; flex-shrink: 0; user-select: none; margin-top: auto;
+  }
+  footer a {
+    color: var(--muted); text-decoration: underline dotted; transition: color 0.2s;
+  }
+  footer a:hover { color: var(--fg);}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-titles">
+      <div class="title">Scan Results</div>
+      <div class="subtitle" id="scanTarget">for: https://example.com</div>
+      <div class="datetime" id="scanDatetime"></div>
+    </div>
+    <button class="toggle-btn" id="toggleModeBtn" title="Toggle dark/light mode">
+      <i data-lucide="moon" id="modeIcon"></i>
+    </button>
+  </header>
+  <div class="summary-row">
+    <div class="summary-item">
+      <div class="summary-label">Total links</div>
+      <div class="summary-value" id="totalLinks">0</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Working</div>
+      <div class="summary-value" id="workingLinks">
+        <i class="icon" data-lucide="check-circle"></i> 0
+      </div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Broken</div>
+      <div class="summary-value" id="brokenLinks">
+        <i class="icon" data-lucide="x-circle"></i> 0
+      </div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">% Broken</div>
+      <div class="summary-value" id="percentBroken">0%</div>
+    </div>
+    <div class="pie-chart-container" id="pieChartContainer">
+      <!-- Pie chart rendered by JS -->
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="scanAgainBtn">
+      <i class="icon" data-lucide="rotate-ccw"></i> Scan again
+    </button>
+    <button class="btn" id="exportJsonBtn">
+      <i class="icon" data-lucide="file-json"></i> Export JSON
+    </button>
+    <button class="btn" id="exportCsvBtn">
+      <i class="icon" data-lucide="file-spreadsheet"></i> Export CSV
+    </button>
+    <button class="btn" id="compareBtn">
+      <i class="icon" data-lucide="git-compare"></i> Compare to last scan
+    </button>
+    <button class="btn" id="settingsBtn">
+      <i class="icon" data-lucide="settings"></i> Settings
+    </button>
+  </div>
+  <div class="filter-row">
+    <div class="filter-toggle" id="filterToggle">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="broken">Only Broken</button>
+      <button class="filter-btn" data-filter="ok">Only Working</button>
+    </div>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search links or files..." autocomplete="off" />
+  </div>
+  <div class="results-table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Link</th><th scope="col">Status</th><th scope="col">Last checked</th><th scope="col">Source</th><th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody id="resultsTableBody" aria-live="polite"></tbody>
+    </table>
+  </div>
+</div>
+<footer>
+  Made with <span style="color:#f33;">&#10084;&#65039;</span> by Adhithiya sv –
+  <a href="https://github.com/sva0-0" target="_blank">GitHub: sva0-0</a>
+</footer>
+
+<!-- Modal root -->
+<div id="modalRoot"></div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const scanTarget = params.get('url') || "https://example.com";
+  const scanType = params.get('type') || "website";
+  document.getElementById('scanTarget').textContent = `for: ${scanTarget}`;
+
+  // --- Dummy data (replace with real backend data) ---
+  const scanDate=new Date();
+  const results=[
+    {url:"https://google.com",status:"ok",lastChecked:new Date(),source:"Home.js"},
+    {url:"https://broken-link.io",status:"broken",lastChecked:new Date(),source:"Footer.jsx"},
+    {url:"https://github.com/sva0-0",status:"ok",lastChecked:new Date(),source:"README.md"},
+    {url:"https://notarealwebsite.tld",status:"broken",lastChecked:new Date(),source:"utils.js"},
+    {url:"https://npmjs.com",status:"ok",lastChecked:new Date(),source:"package.json"}
+  ];
+
+  // --- Format date ---
+  function formatDate(dt){
+    return new Date(dt).toLocaleString(undefined,{year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(',','');
+  }
+
+  // --- Pie chart rendering ---
+  function renderPieChart(working, broken) {
+    const total = working + broken;
+    const r = 38, cx = 45, cy = 45;
+    let arcs = '';
+
+    if (total === 0) {
+      // No data: just the background circle
+      arcs = '';
+    } else if (working === total) {
+      // All working: full green circle
+      arcs = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--pie-ok)" stroke-width="7" fill="none"/>`;
+    } else if (broken === total) {
+      // All broken: full red circle
+      arcs = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--pie-broken)" stroke-width="7" fill="none"/>`;
+    } else {
+      // Mixed: draw arcs
+      const okAngle = (working / total) * 360;
+      const brokenAngle = (broken / total) * 360;
+      const rad = a => (a-90) * Math.PI/180;
+      const x = angle => cx + r * Math.cos(rad(angle));
+      const y = angle => cy + r * Math.sin(rad(angle));
+      // Working arc
+      if (working > 0) {
+        const largeArc = okAngle > 180 ? 1 : 0;
+        arcs += `<path d="M${x(0)},${y(0)} A${r},${r} 0 ${largeArc} 1 ${x(okAngle)},${y(okAngle)}" stroke="var(--pie-ok)" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+      }
+      // Broken arc
+      if (broken > 0) {
+        const start = okAngle;
+        const end = okAngle + brokenAngle;
+        const largeArc = brokenAngle > 180 ? 1 : 0;
+        arcs += `<path d="M${x(start)},${y(start)} A${r},${r} 0 ${largeArc} 1 ${x(end)},${y(end)}" stroke="var(--pie-broken)" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+      }
+    }
+
+    document.getElementById('pieChartContainer').innerHTML = `
+      <svg width="90" height="90" viewBox="0 0 90 90">
+        <circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--divider)" stroke-width="7" fill="none"/>
+        ${arcs}
+      </svg>
+      <div class="pie-label">${working} ✓<br>${broken} ✗</div>
+    `;
+  }
+
+  // --- Filtering and search variables ---
+  let currentFilter = 'all';
+  let searchTerm = '';
+
+  // --- Get filtered results ---
+  function getFilteredResults() {
+    let filtered = results;
+    
+    // Apply status filter
+    if (currentFilter === 'broken') {
+      filtered = filtered.filter(r => r.status === 'broken');
+    } else if (currentFilter === 'ok') {
+      filtered = filtered.filter(r => r.status === 'ok');
+    }
+    
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      filtered = filtered.filter(r => 
+        r.url.toLowerCase().includes(term) || 
+        r.source.toLowerCase().includes(term)
+      );
+    }
+    
+    return filtered;
+  }
+
+  // --- Update summary stats ---
+  function updateSummary(filtered) {
+    // Removed debug logs for production
+    const total = filtered.length;
+    const working = filtered.filter(r => r.status === 'ok').length;
+    const broken = filtered.filter(r => r.status === 'broken').length;
+    const percent = total ? Math.round((broken / total) * 100) : 0;
+    document.getElementById('totalLinks').textContent = total;
+    document.getElementById('workingLinks').innerHTML = `<i class="icon" data-lucide="check-circle"></i> ${working}`;
+    document.getElementById('brokenLinks').innerHTML = `<i class="icon" data-lucide="x-circle"></i> ${broken}`;
+    document.getElementById('percentBroken').textContent = `${percent}%`;
+    renderPieChart(working, broken);
+    lucide.createIcons();
+  }
+
+  // --- Render table ---
+  function renderTable() {
+    const filtered = getFilteredResults();
+    const tbody = document.getElementById('resultsTableBody');
+    tbody.innerHTML = '';
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="${r.url}" target="_blank" style="color:var(--accent);text-decoration:underline dotted;">${r.url}</a></td>
+        <td class="status-${r.status}">${r.status === 'ok' ? '<i class="icon" data-lucide="check-circle"></i> Working' : '<i class="icon" data-lucide="x-circle"></i> Broken'}</td>
+        <td>${formatDate(r.lastChecked)}</td>
+        <td class="source-file">${r.source}</td>
+        <td>${r.status === 'broken'
+          ? `<button class="action-btn" onclick="archiveLink('${encodeURIComponent(r.url)}')"><i class="icon" data-lucide="archive"></i> Archive</button> <button class="action-btn" onclick="showFixModal('${encodeURIComponent(r.url)}')"><i class="icon" data-lucide="wrench"></i> Fix</button>`
+          : `<span style="color:var(--muted);">—</span>`
+        }</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    updateSummary(filtered);
+    lucide.createIcons();
+  }
+
+  // --- Filter button functionality ---
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remove active class from all buttons
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      // Add active class to clicked button
+      this.classList.add('active');
+      // Update filter
+      currentFilter = this.getAttribute('data-filter');
+      // Re-render table
+      renderTable();
+    });
+  });
+
+  // --- Search functionality ---
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    searchTerm = e.target.value;
+    renderTable();
+  });
+
+  // --- Archive link function ---
+  window.archiveLink = function(url) {
+    window.open(`https://web.archive.org/save/${decodeURIComponent(url)}`, '_blank');
+  };
+
+  // --- Show fix modal ---
+  window.showFixModal = function(url) {
+    showModal('Suggest Fix', `Suggest a fix for:\n${decodeURIComponent(url)}`, [
+      {label: 'Close', action: closeModal}
+    ]);
+  };
+
+  // --- Modal functions ---
+  function showModal(title, content, actions = []) {
+    const root = document.getElementById('modalRoot');
+    root.innerHTML = `
+      <div class="modal-backdrop" tabindex="-1">
+        <div class="modal" role="dialog" aria-modal="true">
+          <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+          <div class="modal-title">${title}</div>
+          <div class="modal-content">${content}</div>
+          <div class="modal-actions">
+            ${actions.map((a,i) => `<button class="btn" onclick="(${a.action.toString()})()">${a.label}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    document.querySelector('.modal-backdrop').focus();
+  }
+  
+  window.closeModal = function() {
+    document.getElementById('modalRoot').innerHTML = '';
+  };
+
+  // --- Update header & initial summary ---
+  document.getElementById('scanDatetime').textContent = `Scanned: ${formatDate(scanDate)}`;
+
+  // --- Export buttons ---
+  document.getElementById('exportJsonBtn').onclick = () => {
+    const blob = new Blob([JSON.stringify(results, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = "results.json";
+    document.body.appendChild(a); a.click();
+    setTimeout(() => {document.body.removeChild(a); URL.revokeObjectURL(url);}, 100);
+  };
+  
+  document.getElementById('exportCsvBtn').onclick = () => {
+    const csv = ["Link,Status,Last checked,Source"];
+    results.forEach(r => csv.push(`"${r.url}","${r.status}","${formatDate(r.lastChecked)}","${r.source}"`));
+    const blob = new Blob([csv.join('\n')], {type: "text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = "results.csv";
+    document.body.appendChild(a); a.click();
+    setTimeout(() => {document.body.removeChild(a); URL.revokeObjectURL(url);}, 100);
+  };
+
+  // --- Compare and Settings buttons (placeholder) ---
+  document.getElementById('compareBtn').onclick = () => {
+    showModal('Compare Scans', 'Compare functionality coming soon...', [
+      {label: 'Close', action: closeModal}
+    ]);
+  };
+  
+  document.getElementById('settingsBtn').onclick = () => {
+    showModal('Settings', 'Settings panel coming soon...', [
+      {label: 'Close', action: closeModal}
+    ]);
+  };
+
+  // --- Dark/light toggle ---
+  function setMode(dark) {
+    document.body.classList.toggle('light-mode', !dark);
+    document.getElementById('modeIcon').setAttribute('data-lucide', dark ? 'moon' : 'sun');
+    lucide.createIcons();
+  }
+  
+  // Initialize dark mode
+  let darkMode = localStorage.getItem('darkMode');
+  if (darkMode === null) darkMode = 'true'; // default dark
+  setMode(darkMode !== 'false');
+  
+  // Toggle button
+  document.getElementById('toggleModeBtn').onclick = function() {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('darkMode', isLight ? 'false' : 'true');
+    setMode(!isLight);
+  };
+
+  // --- Add scan again logic ---
+  document.getElementById('scanAgainBtn').onclick = function() {
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get('url');
+    const type = params.get('type');
+    window.location.href = `scan.html?url=${encodeURIComponent(url)}&type=${type}`;
+  };
+
+  // --- Initialize everything ---
+  lucide.createIcons();
+  renderTable();
+</script>
+</body>
+</html>

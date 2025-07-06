@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanning...</title>
+<!-- Lucide icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: #fff;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    min-height: 100vh;
+  }
+  body.dark-mode {
+    background: #181818;
+    color: #f5f5f5;
+  }
+  h2 {
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.2s forwards;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  #link {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 32px;
+    text-align: center;
+    word-break: break-all;
+    max-width: 90vw;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.4s forwards;
+  }
+  body.dark-mode #link {
+    color: #ccc;
+  }
+  /* ECG heartbeat animation */
+  .ecg-container {
+    width: 360px;
+    max-width: 90vw;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 32px 0;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.6s forwards;
+  }
+  .ecg-svg {
+    width: 100%;
+    height: 70px;
+    background: transparent;
+    display: block;
+  }
+  .ecg-path {
+    stroke: #111;
+    stroke-width: 4;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: drawECG 2s cubic-bezier(0.77,0,0.18,1) infinite;
+  }
+  body.dark-mode .ecg-path {
+    stroke: #f5f5f5;
+  }
+  @keyframes drawECG {
+    0% { stroke-dashoffset: 600; }
+    60% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -600; }
+  }
+  /* Progress bar */
+  .progress-container {
+    width: 80%;
+    max-width: 400px;
+    height: 10px;
+    background: #eee;
+    margin-top: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.8s forwards;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  body.dark-mode .progress-container {
+    background: #222;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .progress-bar {
+    width: 0;
+    height: 100%;
+    background: #111;
+    border-radius: 6px;
+    animation: fillBar 4s ease-out forwards;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  body.dark-mode .progress-bar {
+    background: #f5f5f5;
+  }
+  @keyframes fillBar {
+    to { width: 100%; }
+  }
+  .status-text {
+    margin-top: 24px;
+    font-size: 1rem;
+    color: #888;
+    text-align: center;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 1s forwards;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  body.dark-mode .status-text {
+    color: #bbb;
+  }
+  /* Subtle grid background for visual polish */
+  .grid-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -1;
+    background: repeating-linear-gradient(90deg, #f5f5f5 0 1px, transparent 1px 40px),
+                repeating-linear-gradient(180deg, #f5f5f5 0 1px, transparent 1px 40px);
+    pointer-events: none;
+  }
+  body.dark-mode .grid-bg {
+    background: repeating-linear-gradient(90deg, #232323 0 1px, transparent 1px 40px),
+                repeating-linear-gradient(180deg, #232323 0 1px, transparent 1px 40px);
+  }
+  @media (max-width: 500px) {
+    .ecg-container { height: 40px; }
+    .ecg-svg { height: 40px; }
+  }
+  @media (max-width: 600px) {
+    .progress-bar, .progress-container { min-height: 32px; }
+    .status-text { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <h2><i data-lucide="search"></i> Scanning...</h2>
+  <div id="link">Loading...</div>
+  <div class="ecg-container">
+    <svg class="ecg-svg" viewBox="0 0 360 70" aria-hidden="true">
+      <path class="ecg-path" d="M0 35 H30 L40 60 L55 10 L70 60 L85 35 H120 L135 60 L150 10 L165 60 L180 35 H210 L220 60 L235 10 L250 60 L265 35 H300 L310 60 L325 10 L340 60 L355 35 H360"/>
+    </svg>
+  </div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="status-text">
+    <span id="status" role="status" aria-live="polite">Initializing scan...</span>
+  </div>
+<script>
+  lucide.createIcons();
+  // Respect dark/light mode from localStorage
+  if(localStorage.getItem('darkMode') === 'false') {
+    document.body.classList.remove('dark-mode');
+  } else {
+    document.body.classList.add('dark-mode');
+  }
+  // Accessibility: Add aria-labels and roles
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
+  }
+  const ecgSvg = document.querySelector('.ecg-svg');
+  if (ecgSvg) ecgSvg.setAttribute('aria-hidden', 'true');
+
+  // Parse query params
+  const params = new URLSearchParams(window.location.search);
+  const url = params.get('url');
+  const type = params.get('type');
+  document.getElementById('link').textContent = url ? `Scanning: ${url}` : 'No URL provided.';
+  if (!url) {
+    // Do not redirect if no URL
+  } else {
+    setTimeout(() => {
+      window.location.href = `results.html?url=${encodeURIComponent(url)}&type=${type}`;
+    }, 2000);
+  }
+  // Status updates
+  const statusMessages = [
+    'Initializing scan...',
+    'Connecting to server...',
+    'Analyzing links...',
+    'Checking for broken URLs...',
+    'Generating report...',
+    'Almost done...'
+  ];
+  let currentStatus = 0;
+  const statusElement = document.getElementById('status');
+  function updateStatus() {
+    if (currentStatus < statusMessages.length) {
+      statusElement.textContent = statusMessages[currentStatus];
+      currentStatus++;
+      setTimeout(updateStatus, 800);
+    }
+  }
+  setTimeout(updateStatus, 1000);
+  // Show 'Done!' when progress bar finishes
+  const progressBar = document.getElementById('progressBar');
+  progressBar.addEventListener('animationend', function() {
+    statusElement.textContent = 'Done!';
+  });
+</script>
+</body>
+</html>

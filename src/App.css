@@ -1,0 +1,256 @@
+/* background gradient + styles */
+.app {
+  min-height: 100vh;
+  width: 100vw;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(-45deg, #1e1e1e, #121212, #1e1e1e, #121212);
+  background-size: 400% 400%;
+  animation: gradientMove 10s ease infinite;
+  color: #eee;
+  transition: background 0.4s, color 0.4s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInBody 1s ease-out;
+}
+
+
+/* Light mode overrides */
+.app.light-mode {
+  background: linear-gradient(135deg, #f5f7fa, #e4e9ee);
+  color: #222;
+}
+
+@keyframes gradientMove {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+@keyframes fadeInBody { 
+  from { opacity: 0; } 
+  to { opacity: 1; } 
+}
+
+/* Toggle button */
+.toggle-btn {
+  position: absolute; 
+  top: 20px; 
+  left: 20px;
+  background: none; 
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: inherit;
+}
+
+/* User logo */
+.github-logo {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.app.light-mode .github-logo {
+    filter: invert(1);       /* makes dark logo white */
+    opacity: 0.85;           /* slightly softer appearance */
+    transition: filter 0.3s, opacity 0.3s;
+}
+  
+  
+
+.github-logo:hover {
+  transform: scale(1.1);
+}
+
+/* Main title + subtle glowing underline in dark mode */
+h1 {
+  font-weight: 300;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.app:not(.light-mode) h1::after {
+  content:'';
+  position: absolute; 
+  bottom:-6px; 
+  left:0; 
+  right:0;
+  height:2px;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  border-radius:9999px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow { 
+  from{opacity:0.3;} 
+  to{opacity:1;} 
+}
+
+/* Typing effect*/
+.typewriter {
+  display:inline-block;
+  overflow:hidden;
+  border-right:.15em solid currentColor;
+  white-space:nowrap;
+  animation: typing 2s steps(20) forwards,
+             blink 0.8s step-end 2s 1,
+             bounceEnd 0.4s forwards 2.8s;
+}
+
+@keyframes typing { 
+  from { width:0; } 
+  to { width:100%; } 
+}
+@keyframes blink { 
+  50% { border-color: transparent; } 
+}
+@keyframes bounceEnd { 
+  to { transform: scale(1.03); border-color: transparent; } 
+}
+
+/* Text under title */
+p {
+  margin: 0 0 25px;
+  font-size: 1.2rem;
+  color: #ccc;
+  text-align: center;
+}
+.light-mode p { 
+  color: #444; 
+}
+
+/* Feature icons row */
+.icons {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0 25px;
+  opacity: 0;
+  animation: fadeIcons 1s ease forwards 2s;
+}
+
+@keyframes fadeIcons { 
+  to{opacity:1;} 
+}
+
+.icons svg {
+  cursor: pointer;
+  opacity: 0.8;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.icons svg:hover {
+  transform: scale(1.15);
+  color: #77c;
+  opacity: 1;
+}
+
+/* Search styling*/
+.search-wrapper {
+  position: relative;
+  width: 90%; 
+  max-width: 450px;
+  margin: 10px 0 30px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 12px 40px 12px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: rgba(50,50,50,0.6);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  font-size: 1rem;
+  color: #eee;
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
+.light-mode .search-bar {
+  background: rgba(255,255,255,0.6);
+  color: #222;
+}
+
+.search-bar:focus {
+  box-shadow: 0 0 0 3px rgba(100,150,250,0.4);
+  outline: none;
+}
+
+.search-bar::placeholder { 
+  color: rgba(220,220,220,0.7); 
+}
+.light-mode .search-bar::placeholder { 
+  color: rgba(80,80,80,0.8); 
+}
+
+/* Button(search bar)*/
+.clear-btn {
+  position: absolute; 
+  right: 10px; 
+  top: 50%;
+  transform: translateY(-50%);
+  background: none; 
+  border: none;
+  color: #999; 
+  font-size: 1rem;
+  cursor: pointer; 
+  display: none;
+}
+.clear-btn.visible { 
+  display: block; 
+}
+
+/* Action buttons: Github & Website */
+.buttons {
+  margin: 25px 0 30px;
+  display: flex;
+  gap: 14px;
+}
+
+.btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 9999px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  color: inherit;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.3);
+}
+
+/* Footer(fade in) */
+footer {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 10px;
+  text-align: center;
+  opacity: 0;
+  animation: fadeInFooter 1s ease-out 1.5s forwards;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@keyframes fadeInFooter { 
+  to { opacity:1; } 
+}
+
+footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+} 
